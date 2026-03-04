@@ -1,7 +1,10 @@
+import { pegarProdutosPorUsuario } from '@/actions/products'
 import { salvarBiografia } from '@/actions/profile'
 import { BiografiaField } from '@/components/layout/biografiaField'
+import CarrosselField from '@/components/layout/carrosselField'
 import { LocalizacaoPopUp } from '@/components/layout/localizacaoPopUp'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { FieldSeparator } from '@/components/ui/field'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { ShoppingCart, Star } from 'lucide-react'
@@ -16,6 +19,13 @@ export default async function Perfil() {
     where: { id: session?.user.id },
     select: { bio: true },
   })
+
+  const produtos = await pegarProdutosPorUsuario(session?.user.id || '')
+
+  // Separa por categoria
+  const roupas = produtos.filter(p => p.category === 'Roupas')
+  const sapatos = produtos.filter(p => p.category === 'Sapatos')
+  const acessorios = produtos.filter(p => p.category === 'Acessórios')
 
   return (
     <main className='h-screen flex flex-col justify-center items-center '>
@@ -49,7 +59,8 @@ export default async function Perfil() {
             />
           </div>
           <div className='flex gap-2 items-center'>
-            <ShoppingCart className='h-5 w-5' />6 itens
+            <ShoppingCart className='h-5 w-5' />
+            {produtos.length} itens
           </div>
           <div className='flex gap-2 items-center'>
             <Star className='h-5 w-5' />
@@ -57,7 +68,23 @@ export default async function Perfil() {
           </div>
         </div>
       </section>
-      
+
+      <section className='w-full p-5 my-10'>
+        <CarrosselField
+          title='Roupas'
+          products={roupas}
+        />
+        <FieldSeparator className='my-5'/>
+        <CarrosselField
+          title='Sapatos'
+          products={sapatos}
+        />
+        <FieldSeparator className='my-5'/>
+        <CarrosselField
+          title='Acessórios'
+          products={acessorios}
+        />
+      </section>
     </main>
   )
 }
