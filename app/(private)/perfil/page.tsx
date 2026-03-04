@@ -70,20 +70,23 @@ export default async function Perfil() {
       </section>
 
       <section className='w-full p-5 my-10'>
-        <CarrosselField
-          title='Roupas'
-          products={roupas}
-        />
-        <FieldSeparator className='my-5'/>
-        <CarrosselField
-          title='Sapatos'
-          products={sapatos}
-        />
-        <FieldSeparator className='my-5'/>
-        <CarrosselField
-          title='Acessórios'
-          products={acessorios}
-        />
+        {roupas.length > 0 && (
+          <>
+            <CarrosselField title='Roupas' products={roupas} />
+            <FieldSeparator className='my-5' />
+          </>
+        )}
+        {sapatos.length > 0 && (
+          <>
+            <CarrosselField title='Sapatos' products={sapatos} />
+            <FieldSeparator className='my-5' />
+          </>
+        )}
+        {acessorios.length > 0 && (
+          <>
+            <CarrosselField title='Acessórios' products={acessorios} />
+          </>
+        )}
       </section>
     </main>
   )
