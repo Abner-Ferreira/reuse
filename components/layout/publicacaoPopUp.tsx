@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2, Plus, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -32,36 +32,60 @@ import {
   SelectValue,
 } from '../ui/select'
 import { Textarea } from '../ui/textarea'
+import { salvarProduto } from '@/actions/products'
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from '../ui/dropzone'
+import { useUploadThing } from '@/lib/uploadthing'
 
 const postSchema = z.object({
-  image: z.string().optional(),
-  name: z.string().min(2, { message: 'O nome deve conter pelo menos 2 caracteres.' }),
-  description: z.string().min(5, { message: 'A descrição deve conter pelo menos 5 caracteres.' }),
-  category: z.string().min(5),
-  stateOfConservation: z.string().min(5),
+  images: z
+    .array(z.instanceof(File))
+    .min(1, { message: 'Selecione pelo menos 1 imagem.' })
+    .max(5, { message: 'Máximo de 5 imagens.' }),
+  name: z
+    .string()
+    .min(2, { message: 'O nome deve conter pelo menos 2 caracteres.' }),
+  description: z
+    .string()
+    .min(5, { message: 'A descrição deve conter pelo menos 5 caracteres.' }),
+  category: z.string(),
+  stateOfConservation: z.string(),
 })
 
 type PostFormValues = z.infer<typeof postSchema>
 
+
 export default function PublicacaoPopUp() {
   const [open, setOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { startUpload } = useUploadThing('productImages')
+
+  // const {} = useUploadThing()
 
   const form = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
     defaultValues: {
-      image: '',
+      images: [],
       name: '',
-      description: '',
-      category: '',
-      stateOfConservation: '',
+      // description: '',
+      category: undefined,
+      stateOfConservation: undefined,
     },
   })
 
   async function onSubmit(data: PostFormValues) {
+    // 1. Faz upload dos arquivos
+    const uploaded = await startUpload(data.images)
+    if (!uploaded) throw new Error('Erro no upload')
+
+    // 2. Pega as URLs retornadas
+    const imageUrls = uploaded.map(file => file.url)
+
+    // 3. Salva no banco com as URLs
+    await salvarProduto({ ...data, images: imageUrls })
+
+    router.refresh()
     setOpen(false)
-    console.log(data)
-    // router.refresh()
   }
 
   return (
@@ -87,6 +111,74 @@ export default function PublicacaoPopUp() {
           >
             <FormField
               control={form.control}
+              name='images'
+              render={({ field }) => (
+                <FormItem className='w-full my-6'>
+                  <FormLabel>
+                    Imagens <span className='text-destructive'>*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Dropzone
+                      accept={{ 'image/*': [] }}
+                      maxFiles={5}
+                      maxSize={1024 * 1024}
+                      minSize={1024}
+                      onDrop={newFiles => {
+                        const updated = [...field.value, ...newFiles].slice(
+                          0,
+                          5
+                        )
+                        field.onChange(updated)
+                      }}
+                      src={field.value.length > 0 ? field.value : undefined}
+                    >
+                      <DropzoneEmptyState />
+                      <DropzoneContent>
+                        {field.value.length > 0 && (
+                          <div className='grid grid-cols-5 gap-2 w-full'>
+                            {field.value.map((file: File, index: number) => (
+                              <div
+                                key={index}
+                                className='relative aspect-square rounded-lg overflow-hidden border border-border'
+                              >
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={`Imagem ${index + 1}`}
+                                  className='h-full w-full object-cover'
+                                />
+                                {index === 0 && (
+                                  <span className='absolute bottom-1 left-1 text-[10px] font-semibold bg-black/60 text-white rounded px-1 py-0.5'>
+                                    Capa
+                                  </span>
+                                )}
+                                <button
+                                  type='button'
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    field.onChange(
+                                      field.value.filter(
+                                        (_: File, i: number) => i !== index
+                                      )
+                                    )
+                                  }}
+                                  className='absolute top-1 right-1 rounded-full bg-black/60 p-0.5 text-white hover:bg-destructive transition-colors'
+                                >
+                                  <X className='h-3 w-3' />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </DropzoneContent>
+                    </Dropzone>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name='name'
               render={({ field }) => (
                 <FormItem className='w-full my-6'>
@@ -98,7 +190,7 @@ export default function PublicacaoPopUp() {
                       placeholder='Nome do produto'
                       type='text'
                       {...field}
-                      // disabled={isLoading}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -121,6 +213,7 @@ export default function PublicacaoPopUp() {
                       maxLength={500}
                       className='resize-none'
                       {...field}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <div className='flex items-center justify-between'>
@@ -144,29 +237,28 @@ export default function PublicacaoPopUp() {
                 control={form.control}
                 name='category'
                 render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel>
+                  <FormItem>
+                    <FormLabel>
                       Categoria <span className='text-destructive'>*</span>
-                    </FieldLabel>
-                    <FormControl>
-                      <Select {...field}>
-                        <SelectTrigger
-                          className={`w-full ${
-                            fieldState.error
-                              ? 'border-destructive focus:ring-destructive'
-                              : ''
-                          }`}
-                        >
-                          <SelectValue placeholder='Categoria' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value='roupas'>Roupas</SelectItem>
-                          <SelectItem value='sapatos'>Sapatos</SelectItem>
-                          <SelectItem value='acessorios'>Acessórios</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                  </Field>
+                    </FormLabel>
+                    <Select
+                      {...field}
+                      onValueChange={field.onChange}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger
+                        className={`w-full ${fieldState.error ? 'border-destructive' : ''}`}
+                      >
+                        <SelectValue placeholder='Categoria' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='Roupas'>Roupas</SelectItem>
+                        <SelectItem value='Sapatos'>Sapatos</SelectItem>
+                        <SelectItem value='Acessórios'>Acessórios</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
 
@@ -174,32 +266,29 @@ export default function PublicacaoPopUp() {
                 control={form.control}
                 name='stateOfConservation'
                 render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel>
+                  <FormItem>
+                    <FormLabel>
                       Estado de conservação{' '}
                       <span className='text-destructive'>*</span>
-                    </FieldLabel>
-                    <FormControl>
-                      <Select {...field}>
-                        <SelectTrigger
-                          className={`w-full ${
-                            fieldState.error
-                              ? 'border-destructive focus:ring-destructive'
-                              : ''
-                          }`}
-                        >
-                          <SelectValue placeholder='Estado de conservação' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value='novo'>Novo</SelectItem>
-                          <SelectItem value='seminovo'>Seminovo</SelectItem>
-                          <SelectItem value='muito-usado'>
-                            Muito usado
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                  </Field>
+                    </FormLabel>
+                    <Select
+                      {...field}
+                      onValueChange={field.onChange}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger
+                        className={`w-full ${fieldState.error ? 'border-destructive' : ''}`}
+                      >
+                        <SelectValue placeholder='Estado de conservação' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='Novo'>Novo</SelectItem>
+                        <SelectItem value='Seminovo'>Seminovo</SelectItem>
+                        <SelectItem value='Muito usado'>Muito usado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
             </FieldGroup>
@@ -208,7 +297,10 @@ export default function PublicacaoPopUp() {
               <Button
                 type='button'
                 className='bg-destructive w-full hover:border-destructive'
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  setOpen(false)
+                  form.clearErrors()
+                }}
               >
                 Cancelar
               </Button>
