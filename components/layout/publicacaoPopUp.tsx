@@ -84,8 +84,9 @@ export default function PublicacaoPopUp() {
     // 3. Salva no banco com as URLs
     await salvarProduto({ ...data, images: imageUrls })
 
-    router.refresh()
+    router.push('/feed')
     setOpen(false)
+    form.reset()
   }
 
   return (
@@ -121,7 +122,7 @@ export default function PublicacaoPopUp() {
                     <Dropzone
                       accept={{ 'image/*': [] }}
                       maxFiles={5}
-                      maxSize={1024 * 1024}
+                      maxSize={1024 * 1024 * 10}
                       minSize={1024}
                       onDrop={newFiles => {
                         const updated = [...field.value, ...newFiles].slice(
