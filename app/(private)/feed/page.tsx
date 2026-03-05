@@ -52,7 +52,7 @@ export default function Feed() {
   return (
     <main className='flex flex-col w-full h-screen p-5'>
       <div className='self-end'>
-        <PublicacaoPopUp />
+        <PublicacaoPopUp type='criar'/>
       </div>
 
       <Tabs defaultValue='Todas' onValueChange={setActiveTab} className='mt-5'>
