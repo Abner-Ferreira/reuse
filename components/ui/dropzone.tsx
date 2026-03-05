@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type DropzoneContextType = {
-  src?: File[];
+  src?: (File | string)[] ;
   accept?: DropzoneOptions["accept"];
   maxSize?: DropzoneOptions["maxSize"];
   minSize?: DropzoneOptions["minSize"];
@@ -34,7 +34,7 @@ const DropzoneContext = createContext<DropzoneContextType | undefined>(
 );
 
 export type DropzoneProps = Omit<DropzoneOptions, "onDrop"> & {
-  src?: File[];
+  src?: (File | string)[];
   className?: string;
   onDrop?: (
     acceptedFiles: File[],
@@ -130,6 +130,9 @@ export const DropzoneContent = ({
     return children;
   }
 
+  const getFileName = (file: File | string) =>
+    file instanceof File ? file.name : file.split('/').pop() ?? file
+
   return (
     <div className={cn("flex flex-col items-center justify-center", className)}>
       <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
@@ -138,9 +141,9 @@ export const DropzoneContent = ({
       <p className="my-2 w-full truncate font-medium text-sm">
         {src.length > maxLabelItems
           ? `${new Intl.ListFormat("pt-BR").format(
-              src.slice(0, maxLabelItems).map((file) => file.name)
+              src.slice(0, maxLabelItems).map(getFileName)
             )} e ${src.length - maxLabelItems} mais`
-          : new Intl.ListFormat("pt-BR").format(src.map((file) => file.name))}
+          : new Intl.ListFormat("pt-BR").format(src.map(getFileName))}
       </p>
       <p className="w-full text-wrap text-muted-foreground text-xs">
         Arraste e solte ou clique para substituir
