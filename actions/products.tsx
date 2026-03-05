@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma'
 import { headers } from 'next/headers'
 
 export async function salvarProduto(data: {
-  image?: string
+  images: string[]
   name: string
   description: string
   category: string
@@ -17,6 +17,7 @@ export async function salvarProduto(data: {
 
   await prisma.product.create({
     data: {
+      images: data.images,
       name: data.name,
       description: data.description,
       category: data.category,
@@ -33,12 +34,27 @@ export async function pegarTodosOsProdutos() {
 export async function pegarProdutosPorUsuario(userId: string) {
   return await prisma.product.findMany({
     where: { authorId: userId },
-    // select: { id: true, name: true, category: true },
   })
 }
 export async function pegarProdutosPorCategoria(categoria: string) {
   return await prisma.product.findMany({
     where: { category: categoria },
-    // select: { id: true, name: true, category: true },
+  })
+}
+
+export async function pegarProdutoPorID(id: string) {
+  return await prisma.product.findUnique({
+    where: { id: id },
+    include: {
+      author: {
+        select: {
+          name: true,
+          image: true,
+          city: true,
+          state: true,
+          country: true,
+        },
+      },
+    },
   })
 }
