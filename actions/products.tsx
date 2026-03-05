@@ -75,7 +75,6 @@ export async function editarProduto(data: {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user?.id) throw new Error('Não autorizado')
 
-  // Garante que o produto pertence ao usuário logado
   const produto = await prisma.product.findUnique({
     where: { id: data.id },
     select: { authorId: true },
@@ -84,7 +83,6 @@ export async function editarProduto(data: {
   if (!produto) throw new Error('Produto não encontrado')
   if (produto.authorId !== session.user.id) throw new Error('Sem permissão')
 
-  // Deleta imagens removidas do Uploadthing
   const removidas = data.imagensAntigas.filter(
     url => !data.images.includes(url)
   )
@@ -103,5 +101,22 @@ export async function editarProduto(data: {
       category: data.category,
       stateOfConservation: data.stateOfConservation,
     },
+  })
+}
+
+export async function excluirProduto(id: string) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user?.id) throw new Error('Não autorizado')
+
+  const produto = await prisma.product.findUnique({
+    where: { id: id },
+    select: { authorId: true },
+  })
+
+  if (!produto) throw new Error('Produto não encontrado')
+  if (produto.authorId !== session.user.id) throw new Error('Sem permissão')
+
+  await prisma.product.delete({
+    where: { id: id },
   })
 }

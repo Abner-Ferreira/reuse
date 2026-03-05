@@ -114,7 +114,7 @@ export default function PublicacaoPopUp({ type, images, name, description, categ
           ) : (
             <>
               <Pencil />
-              Editar publicação
+              Editar
             </>
           )}
         </Button>

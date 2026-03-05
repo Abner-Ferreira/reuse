@@ -1,12 +1,16 @@
+'use server'
+
 import { Product } from '@/app/generated/prisma'
+import { Trash } from 'lucide-react'
 import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
 import {
   Card,
   CardAction,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '../ui/card'
 import {
   Carousel,
@@ -16,18 +20,34 @@ import {
   CarouselPrevious,
 } from '../ui/carousel'
 import PublicacaoPopUp from './publicacaoPopUp'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog'
+import { excluirProduto } from '@/actions/products'
+import ExcluirProdutoButton from './excluirProduto'
 
 interface CarrosselProps {
   title: string
   products: Product[]
 }
 
-export default function CarrosselField({ title, products }: CarrosselProps) {
+export default async function CarrosselField({ title, products }: CarrosselProps) {
   const conservationColor: Record<string, string> = {
     Novo: 'bg-green-500 hover:bg-green-600',
     Seminovo: 'bg-yellow-500 hover:bg-yellow-600',
     'Muito usado': 'bg-red-500 hover:bg-red-600',
   }
+
+
 
   return (
     <>
@@ -55,7 +75,7 @@ export default function CarrosselField({ title, products }: CarrosselProps) {
                   </Badge>
                   <img
                     src={product.images[0]}
-                    alt='Event cover'
+                    alt='Imagem do produto'
                     className='relative z-20 aspect-video w-full object-contain'
                   />
                   <CardHeader className='flex-1'>
@@ -69,8 +89,17 @@ export default function CarrosselField({ title, products }: CarrosselProps) {
                       {product.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardFooter>
-                    <PublicacaoPopUp type='editar' id={product.id} images={product.images}  name={product.name} description={product.description} category={product.category} stateOfConservation={product.stateOfConservation}/>
+                  <CardFooter className='grid grid-cols-2 gap-4'>
+                    <PublicacaoPopUp
+                      type='editar'
+                      id={product.id}
+                      images={product.images}
+                      name={product.name}
+                      description={product.description}
+                      category={product.category}
+                      stateOfConservation={product.stateOfConservation}
+                    />
+                    <ExcluirProdutoButton id={product.id} />
                   </CardFooter>
                 </Card>
               </CarouselItem>
