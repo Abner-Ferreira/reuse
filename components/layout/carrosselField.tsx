@@ -1,11 +1,12 @@
+import { Product } from '@/app/generated/prisma'
+import { Badge } from '../ui/badge'
 import {
   Card,
   CardAction,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from '../ui/card'
 import {
   Carousel,
@@ -14,9 +15,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel'
-import { Button } from '../ui/button'
-import { Badge } from '../ui/badge'
-import { Product } from '@/app/generated/prisma'
+import PublicacaoPopUp from './publicacaoPopUp'
 
 interface CarrosselProps {
   title: string
@@ -71,7 +70,7 @@ export default function CarrosselField({ title, products }: CarrosselProps) {
                     </CardDescription>
                   </CardHeader>
                   <CardFooter>
-                    <Button className='w-full'>Editar publicação</Button>
+                    <PublicacaoPopUp type='editar' id={product.id} images={product.images}  name={product.name} description={product.description} category={product.category} stateOfConservation={product.stateOfConservation}/>
                   </CardFooter>
                 </Card>
               </CarouselItem>

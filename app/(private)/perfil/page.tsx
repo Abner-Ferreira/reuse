@@ -28,7 +28,7 @@ export default async function Perfil() {
   const acessorios = produtos.filter(p => p.category === 'Acessórios')
 
   return (
-    <main className='h-screen flex flex-col justify-center items-center '>
+    <main className='min-h-screen flex flex-col justify-center items-center '>
       <section className=' h-[40%] w-[70%] flex flex-col justify-evenly items-center'>
         <div>
           <Avatar className='h-30 w-30 '>
