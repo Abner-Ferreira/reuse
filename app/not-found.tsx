@@ -1,9 +1,7 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Image from "next/image"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export default function NotFound() {
@@ -15,7 +13,6 @@ export default function NotFound() {
       
       <div className="grid md:grid-cols-2 items-center gap-12 w-full">
         
-        {/* LEFT - IMAGE */}
         <div className="relative w-full h-75 md:h-125">
           <Image
             src="/lost.png"
@@ -26,7 +23,6 @@ export default function NotFound() {
           />
         </div>
 
-        {/* RIGHT - CONTENT */}
         <div className="flex flex-col gap-6 text-center md:text-left">
           
           <h1 className="text-7xl md:text-9xl font-extrabold text-primary leading-none">

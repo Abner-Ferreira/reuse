@@ -1,21 +1,41 @@
 'use client'
 
+import { editarProduto, salvarProduto } from '@/actions/products'
+import { useUploadThing } from '@/lib/uploadthing'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, Pencil, Plus, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import z from 'zod'
 import { Button } from '../ui/button'
-import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogTrigger} from '../ui/dialog'
-import { Field, FieldGroup, FieldLabel } from '../ui/field'
-import {Form,FormControl,FormField,FormItem,FormLabel,FormMessage} from '../ui/form'
-import { Input } from '../ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '../ui/select'
-import { Textarea } from '../ui/textarea'
-import { editarProduto, salvarProduto } from '@/actions/products'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog'
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from '../ui/dropzone'
-import { useUploadThing } from '@/lib/uploadthing'
+import { FieldGroup } from '../ui/field'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../ui/form'
+import { Input } from '../ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select'
+import { Textarea } from '../ui/textarea'
 
 type ImageItem = File | string
 
@@ -44,9 +64,19 @@ interface Publicacao {
   category?: string
   stateOfConservation?: string
   id?: string
+  onSuccess?: () => void
 }
 
-export default function PublicacaoPopUp({ type, images, name, description, category, stateOfConservation, id}: Publicacao) {
+export default function PublicacaoPopUp({
+  type,
+  images,
+  name,
+  description,
+  category,
+  stateOfConservation,
+  id,
+  onSuccess,
+}: Publicacao) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -66,7 +96,6 @@ export default function PublicacaoPopUp({ type, images, name, description, categ
   const imagensOriginais = useRef<string[]>(images || [])
 
   async function onSubmit(data: PostFormValues) {
-
     const existingUrls = data.images.filter(
       (img): img is string => typeof img === 'string'
     )
@@ -83,17 +112,27 @@ export default function PublicacaoPopUp({ type, images, name, description, categ
     }
 
     if (type === 'criar') {
-      await salvarProduto({ ...data, images: imageUrls })
-      router.push('/feed')
+      try {
+        await salvarProduto({ ...data, images: imageUrls })
+        toast.success('Publicação do produto feita com sucesso!')
+        onSuccess?.()
+      } catch (error) {
+        toast.error('Erro ao tentar fazer a publicação do produto.')
+      }
     } else {
       if (!id) return
-      await editarProduto({
-        ...data,
-        images: imageUrls,
-        id,
-        imagensAntigas: imagensOriginais.current,
-      })
-      router.push('/perfil')
+      try {
+        await editarProduto({
+          ...data,
+          images: imageUrls,
+          id,
+          imagensAntigas: imagensOriginais.current,
+        })
+        toast.success('Produto editado com sucesso!')
+        onSuccess?.()
+      } catch (error) {
+        toast.error('Erro ao tentar editar o produto.')
+      }
     }
 
     setOpen(false)

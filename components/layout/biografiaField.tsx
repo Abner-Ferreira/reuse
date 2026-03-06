@@ -50,7 +50,7 @@ export function BiografiaField({
           <div className='flex items-center justify-between mb-1'>
             <FieldLabel htmlFor='biografia'>Biografia</FieldLabel>
 
-            {/* Botão Editar — só aparece quando não está editando e já há texto */}
+            {/* Botão Editar */}
             {!isEditing && biografia && (
               <Button
                 variant='ghost'
@@ -76,7 +76,7 @@ export function BiografiaField({
               />
 
               <div className='flex justify-end gap-2 mt-2'>
-                {/* Cancelar — só aparece se já existia uma biografia salva */}
+                {/* Cancelar */}
                 {biografia && (
                   <Button
                     variant='ghost'
@@ -89,23 +89,24 @@ export function BiografiaField({
                   </Button>
                 )}
 
-                <Button
-                  size='sm'
-                  onClick={handleSave}
-                  disabled={isSaving || draft.trim() === ''}
-                  className='gap-1'
-                >
-                  <Check className='h-3.5 w-3.5' />
-                  {isSaving ? 'Salvando...' : 'Salvar'}
-                </Button>
+                {draft && (
+                  <Button
+                    size='sm'
+                    onClick={handleSave}
+                    disabled={isSaving || draft.trim() === ''}
+                    className='gap-1'
+                  >
+                    <Check className='h-3.5 w-3.5' />
+                    {isSaving ? 'Salvando...' : 'Salvar'}
+                  </Button>
+                )}
               </div>
             </>
           ) : (
-            // Modo visualização
             <p className='text-sm text-muted-foreground whitespace-pre-wrap rounded-md border border-transparent px-1 py-2 min-h-24'>
               {biografia || (
                 <span className='italic'>
-                  Nenhuma biografia cadastrada.{' '}
+                  Nenhuma biografia cadastrada.
                   <button
                     onClick={handleEdit}
                     className='underline underline-offset-2 hover:text-foreground transition-colors'

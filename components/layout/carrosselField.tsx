@@ -1,9 +1,7 @@
 'use server'
 
 import { Product } from '@/app/generated/prisma'
-import { Trash } from 'lucide-react'
-import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import { Badge, conservationColor } from '../ui/badge'
 import {
   Card,
   CardAction,
@@ -19,36 +17,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel'
-import PublicacaoPopUp from './publicacaoPopUp'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogMedia,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '../ui/alert-dialog'
-import { excluirProduto } from '@/actions/products'
 import ExcluirProdutoButton from './excluirProduto'
+import PublicacaoPopUp from './publicacaoPopUp'
 
 interface CarrosselProps {
   title: string
   products: Product[]
 }
 
-export default async function CarrosselField({ title, products }: CarrosselProps) {
-  const conservationColor: Record<string, string> = {
-    Novo: 'bg-green-500 hover:bg-green-600',
-    Seminovo: 'bg-yellow-500 hover:bg-yellow-600',
-    'Muito usado': 'bg-red-500 hover:bg-red-600',
-  }
-
-
-
+export default async function CarrosselField({
+  title,
+  products,
+}: CarrosselProps) {
   return (
     <>
       <h1 className='text-2xl text-(--text-gray) my-5'>{title}</h1>

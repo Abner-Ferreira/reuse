@@ -1,10 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
-import z from 'zod'
+import { salvarLocalizacao } from '@/actions/profile'
+import { SelectField } from '@/components/layout/selectField'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -20,11 +18,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Button } from '@/components/ui/button'
-import { SelectField } from '@/components/layout/selectField'
-import { MapPin, Loader2 } from 'lucide-react'
-import { Country, State, City } from 'country-state-city'
-import { salvarLocalizacao } from '@/actions/profile'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { City, Country, State } from 'country-state-city'
+import { Loader2, MapPin } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import z from 'zod'
 
 const locationSchema = z.object({
   country: z.string().min(1, 'Selecione um país'),
@@ -46,7 +46,8 @@ export function LocalizacaoPopUp({ currentLocation }: Props) {
   const [open, setOpen] = useState(false)
   const router = useRouter()
 
-  const hasLocation = currentLocation?.city && currentLocation?.state && currentLocation?.country
+  const hasLocation =
+    currentLocation?.city && currentLocation?.state && currentLocation?.country
 
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
@@ -61,8 +62,13 @@ export function LocalizacaoPopUp({ currentLocation }: Props) {
   const selectedState = form.watch('state')
 
   const countries = Country.getAllCountries()
-  const states = selectedCountry ? State.getStatesOfCountry(selectedCountry) : []
-  const cities = selectedCountry && selectedState ? City.getCitiesOfState(selectedCountry, selectedState) : []
+  const states = selectedCountry
+    ? State.getStatesOfCountry(selectedCountry)
+    : []
+  const cities =
+    selectedCountry && selectedState
+      ? City.getCitiesOfState(selectedCountry, selectedState)
+      : []
 
   async function onSubmit(data: LocationFormValues) {
     await salvarLocalizacao(data)
@@ -75,13 +81,13 @@ export function LocalizacaoPopUp({ currentLocation }: Props) {
       <DialogTrigger asChild>
         <div className='flex gap-2 items-center cursor-pointer'>
           <MapPin className='h-5 w-5' />
-          {hasLocation
-            ? `${currentLocation.city}, ${currentLocation.state} - ${currentLocation.country?.split('-')[0]}`
-            : (
-              <span className='text-muted-foreground hover:text-foreground underline underline-offset-2 text-sm transition-colors'>
-                Inserir localização
-              </span>
-            )}
+          {hasLocation ? (
+            `${currentLocation.city}, ${currentLocation.state} - ${currentLocation.country?.split('-')[0]}`
+          ) : (
+            <span className='text-muted-foreground hover:text-foreground underline underline-offset-2 text-sm transition-colors'>
+              Inserir localização
+            </span>
+          )}
         </div>
       </DialogTrigger>
 
@@ -93,8 +99,10 @@ export function LocalizacaoPopUp({ currentLocation }: Props) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 pt-2'>
-
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='space-y-4 pt-2'
+          >
             <FormField
               control={form.control}
               name='country'
@@ -160,13 +168,26 @@ export function LocalizacaoPopUp({ currentLocation }: Props) {
             />
 
             <div className='grid grid-cols-2 gap-2 pt-2'>
-              <Button type='button' className='bg-destructive w-full hover:border-destructive' onClick={() => setOpen(false)}>
+              <Button
+                type='button'
+                className='bg-destructive w-full hover:border-destructive'
+                onClick={() => setOpen(false)}
+              >
                 Cancelar
               </Button>
-              <Button type='submit' className='w-full' disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting
-                  ? <><Loader2 className='h-4 w-4 mr-2 animate-spin' />Salvando...</>
-                  : 'Salvar'}
+              <Button
+                type='submit'
+                className='w-full'
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                    Salvando...
+                  </>
+                ) : (
+                  'Salvar'
+                )}
               </Button>
             </div>
           </form>

@@ -4,11 +4,11 @@ import { Slot } from 'radix-ui'
 
 import { cn } from '@/lib/utils'
 
-export const conservationColor: Record<string, string> = {
-  'Novo': 'bg-primary text-primary-foreground ',
-  'Seminovo': 'bg-muted-foreground text-[#F5F5F5]',
-  'Muito usado': 'bg-destructive/80 text-destructive-foreground',
-}
+ export const conservationColor: Record<string, string> = {
+    Novo: 'bg-green-500 hover:bg-green-600',
+    Seminovo: 'bg-yellow-500 hover:bg-yellow-600',
+    'Muito usado': 'bg-red-500 hover:bg-red-600',
+  }
 
 const badgeVariants = cva(
   'inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3',

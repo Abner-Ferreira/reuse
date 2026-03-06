@@ -15,8 +15,8 @@ interface SelectProps {
   listOfStatesAndCities?: Array<IState> | Array<ICity>
   name?: string
   placeholder: string
-  value?: string              // 👈 necessário para o form controlar
-  onChange?: (val: string) => void  // 👈 avisa o form quando muda
+  value?: string             
+  onChange?: (val: string) => void 
 }
 
 export function SelectField({

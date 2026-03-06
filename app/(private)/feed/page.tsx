@@ -1,8 +1,7 @@
 'use client'
 
 import {
-  pegarProdutosPorUsuario,
-  pegarTodosOsProdutos,
+  pegarTodosOsProdutos
 } from '@/actions/products'
 import PublicacaoPopUp from '@/components/layout/publicacaoPopUp'
 import { Badge, conservationColor } from '@/components/ui/badge'
@@ -17,12 +16,9 @@ import {
 } from '@/components/ui/card'
 import {
   Tabs,
-  TabsContent,
   TabsList,
-  tabsListVariants,
-  TabsTrigger,
+  TabsTrigger
 } from '@/components/ui/tabs'
-import { Filter } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -52,7 +48,7 @@ export default function Feed() {
   return (
     <main className='flex flex-col w-full h-screen p-5'>
       <div className='self-end'>
-        <PublicacaoPopUp type='criar'/>
+        <PublicacaoPopUp type='criar' onSuccess={() => pegarTodosOsProdutos().then(data => setProdutos(data))} />
       </div>
 
       <Tabs defaultValue='Todas' onValueChange={setActiveTab} className='mt-5'>

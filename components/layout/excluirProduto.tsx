@@ -1,10 +1,9 @@
-// components/layout/excluirProdutoButton.tsx
 'use client'
 
 import { excluirProduto } from '@/actions/products'
-import { useRouter } from 'next/navigation'
 import { Trash } from 'lucide-react'
-import { Button } from '../ui/button'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,12 +16,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog'
+import { Button } from '../ui/button'
 
 export default function ExcluirProdutoButton({ id }: { id: string }) {
   const router = useRouter()
 
   async function handleExcluir() {
-    await excluirProduto(id)
+    try {
+      await excluirProduto(id)
+      toast.success('Produto excluído com sucesso!')
+    } catch (error) {
+      toast.success('Erro ao excluir o produto.')
+    }
     router.refresh()
   }
 
@@ -47,10 +52,7 @@ export default function ExcluirProdutoButton({ id }: { id: string }) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel variant='outline'>Cancelar</AlertDialogCancel>
-          <AlertDialogAction
-            variant='destructive'
-            onClick={handleExcluir}
-          >
+          <AlertDialogAction variant='destructive' onClick={handleExcluir}>
             Deletar
           </AlertDialogAction>
         </AlertDialogFooter>

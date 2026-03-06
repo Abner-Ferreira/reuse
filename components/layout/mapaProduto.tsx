@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { Coords, Pin } from '@/hooks/useGeocoding'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Coords, Pin, getDistanceKm } from '@/hooks/useGeocoding'
+import { useEffect } from 'react'
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 
-// Corrige ícones do Leaflet no Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -14,7 +13,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-// Ícone especial para o usuário atual
 const userIcon = new L.Icon({
   iconUrl:
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='%232563eb' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='white'/%3E%3C/svg%3E",
@@ -23,7 +21,6 @@ const userIcon = new L.Icon({
   popupAnchor: [0, -16],
 })
 
-// Ícone para produtos
 const productIcon = new L.Icon({
   iconUrl:
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='36' viewBox='0 0 28 36'%3E%3Cpath d='M14 0C6.268 0 0 6.268 0 14c0 9.333 14 22 14 22S28 23.333 28 14C28 6.268 21.732 0 14 0z' fill='%23f97316'/%3E%3Ccircle cx='14' cy='14' r='6' fill='white'/%3E%3C/svg%3E",
@@ -32,7 +29,6 @@ const productIcon = new L.Icon({
   popupAnchor: [0, -36],
 })
 
-// Recentra o mapa quando as coordenadas do usuário ficam disponíveis
 function RecenterMap({ coords }: { coords: Coords | null }) {
   const map = useMap()
   useEffect(() => {

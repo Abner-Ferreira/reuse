@@ -2,9 +2,8 @@
 
 import { pegarProdutoPorID } from '@/actions/products'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MapPin, Tag, ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MapPin, Tag } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -69,7 +68,7 @@ export default function Produto() {
   }
 
   const location =
-    [produto.author?.city, produto.author?.state].filter(Boolean).join(', ') ||
+    [produto.author?.city, produto.author?.state].filter(Boolean).join(', ') + ' - ' + produto.author.country ||
     'Localização desconhecida'
 
   return (

@@ -7,7 +7,6 @@ export interface Coords {
   lng: number
 }
 
-// Cache em memória para evitar requisições repetidas ao Nominatim
 const geocodeCache = new Map<string, Coords | null>()
 
 async function geocode(location: string): Promise<Coords | null> {
@@ -37,8 +36,12 @@ async function geocode(location: string): Promise<Coords | null> {
   }
 }
 
-// Fórmula Haversine — distância em km entre dois pontos
-export function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+export function getDistanceKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
   const R = 6371
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLng = ((lng2 - lng1) * Math.PI) / 180
@@ -53,12 +56,14 @@ export function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: nu
 export interface Product {
   id: string
   name: string
-  localization: string // ex: "Osasco-SP, Brasil"
+  city: string | null
+  state: string | null
+  country: string | null
   category?: string
   stateOfConservation?: string
   imageUrl?: string
+  localization?: string 
 }
-
 export interface Pin extends Coords {
   products: Product[]
   distanceKm?: number
@@ -70,17 +75,20 @@ interface UseGeocodingProps {
   radiusKm?: number
 }
 
-export function useGeocoding({ products, currentUserLocation, radiusKm = 50 }: UseGeocodingProps) {
+export function useGeocoding({
+  products,
+  currentUserLocation,
+  radiusKm = 50,
+}: UseGeocodingProps) {
   const [pins, setPins] = useState<Pin[]>([])
   const [userCoords, setUserCoords] = useState<Coords | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Evita reprocessar se os dados não mudaram
   const prevDataRef = useRef<string>('')
 
   useEffect(() => {
-    const key = `${currentUserLocation}|${products.map((p) => p.id).join(',')}|${radiusKm}`
+    const key = `${currentUserLocation}|${products.map(p => p.id).join(',')}|${radiusKm}`
     if (prevDataRef.current === key) return
     prevDataRef.current = key
 
@@ -92,23 +100,28 @@ export function useGeocoding({ products, currentUserLocation, radiusKm = 50 }: U
         const userPos = await geocode(currentUserLocation)
         setUserCoords(userPos)
 
-        // Agrupa produtos por localização para não geocodar a mesma cidade várias vezes
+      
         const grouped = products.reduce(
           (acc, product) => {
-            acc[product.localization] = acc[product.localization] ?? []
-            acc[product.localization].push(product)
+            const localization = [product.city, product.state, product.country]
+              .filter(Boolean)
+              .join(', ')
+
+            if (!localization) return acc 
+
+            acc[localization] = acc[localization] ?? []
+            acc[localization].push({ ...product, localization })
             return acc
           },
-          {} as Record<string, Product[]>
+          {} as Record<string, (Product & { localization: string })[]>
         )
 
-        // Nominatim permite 1 req/s — adicionamos delay entre chamadas
         const entries = Object.entries(grouped)
         const results: Pin[] = []
 
         for (let i = 0; i < entries.length; i++) {
           const [location, prods] = entries[i]
-          if (i > 0) await new Promise((r) => setTimeout(r, 1100))
+          if (i > 0) await new Promise(r => setTimeout(r, 1100))
 
           const coords = await geocode(location)
           if (!coords) continue
@@ -117,13 +130,12 @@ export function useGeocoding({ products, currentUserLocation, radiusKm = 50 }: U
             ? getDistanceKm(userPos.lat, userPos.lng, coords.lat, coords.lng)
             : undefined
 
-          // Filtra pelo raio se tiver coordenadas do usuário
-          if (userPos && distanceKm !== undefined && distanceKm > radiusKm) continue
+          if (userPos && distanceKm !== undefined && distanceKm > radiusKm)
+            continue
 
           results.push({ ...coords, products: prods, distanceKm })
         }
 
-        // Ordena do mais próximo ao mais distante
         results.sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0))
         setPins(results)
       } catch {

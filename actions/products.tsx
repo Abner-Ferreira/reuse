@@ -2,6 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { UTApi } from 'uploadthing/server'
 
@@ -26,10 +27,22 @@ export async function salvarProduto(data: {
       authorId: session.user.id,
     },
   })
+
+  revalidatePath('/feed')
 }
 
 export async function pegarTodosOsProdutos() {
-  return await prisma.product.findMany()
+  return await prisma.product.findMany({
+    include: {
+      author: {
+        select: {
+          city: true,
+          state: true,
+          country: true,
+        },
+      },
+    },
+  })
 }
 
 export async function pegarProdutosPorUsuario(userId: string) {
@@ -102,6 +115,8 @@ export async function editarProduto(data: {
       stateOfConservation: data.stateOfConservation,
     },
   })
+
+  revalidatePath('/perfil')
 }
 
 export async function excluirProduto(id: string) {
@@ -110,13 +125,20 @@ export async function excluirProduto(id: string) {
 
   const produto = await prisma.product.findUnique({
     where: { id: id },
-    select: { authorId: true },
+    select: { authorId: true, images: true },
   })
 
   if (!produto) throw new Error('Produto não encontrado')
   if (produto.authorId !== session.user.id) throw new Error('Sem permissão')
 
+  const keys = produto.images.map(url => url.split('/').pop()!)
+  if (keys.length > 0) {
+    await utapi.deleteFiles(keys)
+  }
+
   await prisma.product.delete({
     where: { id: id },
   })
+
+  revalidatePath('/perfil')
 }

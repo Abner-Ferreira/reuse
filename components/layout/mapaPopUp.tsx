@@ -7,12 +7,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Slider } from '@/components/ui/slider'
 import { useGeocoding, Product } from '@/hooks/useGeocoding'
 
-// Importação dinâmica para evitar SSR do Leaflet
 const ProductMap = lazy(() => import('./mapaProduto'))
 
 interface MapModalProps {
   products: Product[]
-  currentUserLocation: string // ex: "Embu das Artes-SP, Brasil"
+  currentUserLocation: string
 }
 
 export default function MapaPopUp({ products, currentUserLocation }: MapModalProps) {

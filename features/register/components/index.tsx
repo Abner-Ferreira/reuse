@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { City, Country, State } from 'country-state-city'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -21,7 +22,6 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
-import { Country, State, City } from 'country-state-city'
 
 const registerSchema = z
   .object({
