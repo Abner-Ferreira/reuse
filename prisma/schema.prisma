@@ -8,35 +8,81 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String
-  country       String?
-  city          String?
-  state         String?
-  bio           String?
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  products      Product[]
-  accounts      Account[]
-  sessions      Session[]
+  id                    String         @id @default(cuid())
+  email                 String         @unique
+  name                  String
+  country               String?
+  city                  String?
+  state                 String?
+  bio                   String?
+  emailVerified         Boolean        @default(false)
+  image                 String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  products              Product[]
+  accounts              Account[]
+  sessions              Session[]
+  conversationsAsBuyer  Conversation[] @relation("ConversationBuyer")
+  conversationsAsSeller Conversation[] @relation("ConversationSeller")
+  messages              Message[]      @relation("MessageAuthor")
+  reviewsGiven          Review[]       @relation("ReviewReviewer")
+  reviewsReceived       Review[]       @relation("ReviewReviewed")
 }
 
 model Product {
-  id                  String   @id @default(cuid())
+  id                  String         @id @default(cuid())
   images              String[]
   name                String
   description         String
   category            String
   stateOfConservation String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
   authorId            String
-  author              User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author              User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  conversations       Conversation[]
 
   @@index([authorId])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     User      @relation("ConversationBuyer", fields: [buyerId], references: [id])
+  sellerId  String
+  seller    User      @relation("ConversationSeller", fields: [sellerId], references: [id])
+  status    String    @default("active") // "active" | "closed"
+  messages  Message[]
+  review    Review?
+  createdAt DateTime  @default(now())
+
+  @@unique([productId, buyerId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User         @relation("MessageAuthor", fields: [authorId], references: [id])
+  content        String
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+}
+
+model Review {
+  id             String       @id @default(cuid())
+  conversationId String       @unique
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  reviewerId     String
+  reviewer       User         @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  reviewedId     String
+  reviewed       User         @relation("ReviewReviewed", fields: [reviewedId], references: [id])
+  rating         Int // 1 to 5
+  comment        String?
+  createdAt      DateTime     @default(now())
 }
 
 model Session {

@@ -1,8 +1,10 @@
 'use client'
 
 import { pegarProdutoPorID } from '@/actions/products'
+import ChatFlutuante from '@/components/layout/chatFlutuante'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { authClient } from '@/lib/auth-client'
 import { ArrowLeft, MapPin, Tag } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -48,6 +50,14 @@ export default function Produto() {
       .finally(() => setIsLoading(false))
   }, [id])
 
+  const [currentUserId, setCurrentUserId] = useState<string>('')
+
+  useEffect(() => {
+    authClient.getSession().then(({ data }) => {
+      setCurrentUserId(data?.user?.id ?? '')
+    })
+  }, [])
+
   if (isLoading) {
     return (
       <main className='flex h-screen items-center justify-center'>
@@ -68,8 +78,9 @@ export default function Produto() {
   }
 
   const location =
-    [produto.author?.city, produto.author?.state].filter(Boolean).join(', ') + ' - ' + produto.author.country ||
-    'Localização desconhecida'
+    [produto.author?.city, produto.author?.state].filter(Boolean).join(', ') +
+      ' - ' +
+      produto.author.country || 'Localização desconhecida'
 
   return (
     <main className='min-h-screen bg-background'>
@@ -164,7 +175,9 @@ export default function Produto() {
             </p>
 
             {/* Estado de conservação */}
-            <p className='text-base sm:text-lg text-muted-foreground leading-relaxed text-justify'>Estado de conservação: {produto?.stateOfConservation}</p>
+            <p className='text-base sm:text-lg text-muted-foreground leading-relaxed text-justify'>
+              Estado de conservação: {produto?.stateOfConservation}
+            </p>
 
             <hr className='border-border' />
 
@@ -190,9 +203,16 @@ export default function Produto() {
               </div>
             </div>
 
-            <Button size='lg' className='w-full sm:w-fit mt-2'>
-              Solicitar negociação
-            </Button>
+            <ChatFlutuante
+              productId={produto.id}
+              sellerId={produto.authorId}
+              sellerName={produto.author.name}
+              sellerImage={produto.author.image}
+              productName={produto.name}
+              currentUserId={currentUserId} // pegar da sessão
+              isSeller={currentUserId === produto.authorId}
+              pageLoc='produtos'
+            />
           </div>
         </section>
       </div>

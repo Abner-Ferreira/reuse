@@ -1,8 +1,7 @@
 'use client'
 
-import {
-  pegarTodosOsProdutos
-} from '@/actions/products'
+import { pegarTodosOsProdutos } from '@/actions/products'
+import ChatFlutuante from '@/components/layout/chatFlutuante'
 import PublicacaoPopUp from '@/components/layout/publicacaoPopUp'
 import { Badge, conservationColor } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,11 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger
-} from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { authClient } from '@/lib/auth-client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -30,13 +26,21 @@ interface Product {
   stateOfConservation: string
   images: string[]
   authorId: string
+  author: {
+    name: string
+    image?: string | null
+  }
 }
 
 export default function Feed() {
   const [produtos, setProdutos] = useState<Product[]>([])
   const [activeTab, setActiveTab] = useState('Todas')
+  const [currentUserId, setCurrentUserId] = useState<string>('')
 
   useEffect(() => {
+    authClient.getSession().then(({ data }) => {
+      setCurrentUserId(data?.user?.id ?? '')
+    })
     pegarTodosOsProdutos().then(data => setProdutos(data))
   }, [])
 
@@ -48,7 +52,12 @@ export default function Feed() {
   return (
     <main className='flex flex-col w-full h-screen p-5'>
       <div className='self-end'>
-        <PublicacaoPopUp type='criar' onSuccess={() => pegarTodosOsProdutos().then(data => setProdutos(data))} />
+        <PublicacaoPopUp
+          type='criar'
+          onSuccess={() =>
+            pegarTodosOsProdutos().then(data => setProdutos(data))
+          }
+        />
       </div>
 
       <Tabs defaultValue='Todas' onValueChange={setActiveTab} className='mt-5'>
@@ -91,9 +100,16 @@ export default function Feed() {
                 <Button className='w-[40%]'>
                   <Link href={`/produtos/${product.id}`}>Ver produto</Link>
                 </Button>
-                <Button className='w-[40%]' variant={'outline'}>
-                  <Link href={`/produtos/${product.id}`}>Abrir chat</Link>
-                </Button>
+                <ChatFlutuante
+                  productId={product.id}
+                  sellerId={product.authorId}
+                  sellerName={product.author?.name ?? ''}
+                  sellerImage={product.author?.image}
+                  productName={product.name}
+                  currentUserId={currentUserId}
+                  isSeller={currentUserId === product.authorId}
+                  pageLoc='feed'
+                />
               </CardFooter>
             </Card>
           ))}

@@ -36,6 +36,8 @@ export async function pegarTodosOsProdutos() {
     include: {
       author: {
         select: {
+          name: true,
+          image: true,
           city: true,
           state: true,
           country: true,

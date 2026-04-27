@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth-client'  
 import {
   Home,
   LogOut,
