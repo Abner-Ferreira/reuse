@@ -79,7 +79,7 @@ export default function Sidebar() {
                 <TooltipContent side='right'>Feed</TooltipContent>
               </Tooltip>
 
-              <Tooltip>
+              {/* <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
                     href='#'
@@ -90,9 +90,9 @@ export default function Sidebar() {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side='right'>Negociações</TooltipContent>
-              </Tooltip>
+              </Tooltip> */}
 
-              <Tooltip>
+              {/* <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
                     href='#'
@@ -103,7 +103,7 @@ export default function Sidebar() {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side='right'>Pedidos</TooltipContent>
-              </Tooltip>
+              </Tooltip> */}
 
               <Tooltip>
                 <TooltipTrigger asChild>

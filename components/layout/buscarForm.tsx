@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
 import { Button } from '../ui/button'
@@ -16,124 +15,130 @@ import {
   SelectValue,
 } from '../ui/select'
 
-const searchSchema = z
-  .object({
-    name: z.string().optional(),
-    category: z.string().optional(),
-    localization: z.string().optional(),
-    stateOfConservation: z.string().optional(),
-  })
-  .refine(data => !!data.name || !!data.localization, {
-    message: 'Preencha ao menos o nome ou a localização para buscar',
-    path: ['name'],
-  })
+const searchSchema = z.object({
+  name: z.string().optional(),
+  category: z.string().optional(),
+  localization: z.string().optional(),
+  stateOfConservation: z.string().optional(),
+})
 
-type SearchFormValues = z.infer<typeof searchSchema>
+export type SearchFormValues = z.infer<typeof searchSchema>
 
-export default function BuscarForm() {
-  const [isLoading, setIsLoading] = useState(false)
+interface BuscarFormProps {
+  onSearch: (data: {
+    name: string
+    localization: string
+    category: string
+    stateOfConservation: string
+  }) => void
+}
 
+export default function BuscarForm({ onSearch }: BuscarFormProps) {
   const form = useForm<SearchFormValues>({
     resolver: zodResolver(searchSchema),
     defaultValues: {
       name: '',
-      category: undefined,
+      category: 'todas',
       localization: '',
-      stateOfConservation: undefined,
+      stateOfConservation: 'todos',
     },
   })
 
   async function onSubmit(formData: SearchFormValues) {
-    const params = {
-      name: formData.name,
-      localization: formData.localization,
+    onSearch({
+      name: formData.name || '',
+      localization: formData.localization || '',
       category: formData.category || 'todas',
       stateOfConservation: formData.stateOfConservation || 'todos',
-    }
-    form.reset()
-    console.log(params)
+    })
   }
+
+  function limparBusca() {
+    form.reset({
+      name: '',
+      category: 'todas',
+      localization: '',
+      stateOfConservation: 'todos',
+    })
+
+    onSearch({
+      name: '',
+      localization: '',
+      category: 'todas',
+      stateOfConservation: 'todos',
+    })
+  }
+
   return (
-    <>
-      <section className='flex flex-col w-full'>
-        <h1 className='text-(--text-gray) font-normal text-lg'>Buscar</h1>
+    <section className='flex w-full flex-col'>
+      <h1 className='text-lg font-normal text-(--text-gray)'>Buscar</h1>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className='mt-5 grid grid-cols-2 md:grid-cols-5 gap-2 lg:gap-10 h-22'>
-              <FormField
-                control={form.control}
-                name='name'
-                render={({ field }) => (
-                  <FormItem className='w-full'>
-                    <FormControl>
-                      <Input
-                        placeholder='Nome'
-                        type='text'
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='category'
-                render={({ field }) => (
-                  <Select {...field} disabled={isLoading}>
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Categoria' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='todas'>Todas</SelectItem>
-                      <SelectItem value='roupas'>Roupas</SelectItem>
-                      <SelectItem value='sapatos'>Sapatos</SelectItem>
-                      <SelectItem value='acessorios'>Acessórios</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='localization'
-                render={({ field }) => (
-                  <FormItem className='w-full'>
-                    <FormControl>
-                      <Input
-                        placeholder='Localização'
-                        type='text'
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='stateOfConservation'
-                render={({ field }) => (
-                  <Select {...field} disabled={isLoading}>
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Estado de conservação' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='todos'>Todos</SelectItem>
-                      <SelectItem value='novo'>Novo</SelectItem>
-                      <SelectItem value='seminovo'>Seminovo</SelectItem>
-                      <SelectItem value='muito-usado'>Muito usado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className='mt-5 grid grid-cols-1 gap-3 md:grid-cols-5 lg:gap-6'>
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder='Nome' type='text' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <Button
-                type='submit'
-                className='w-full max-h-10'
-                disabled={form.formState.isSubmitting}
-              >
+            <FormField
+              control={form.control}
+              name='category'
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Categoria' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='todas'>Todas</SelectItem>
+                    <SelectItem value='roupas'>Roupas</SelectItem>
+                    <SelectItem value='sapatos'>Sapatos</SelectItem>
+                    <SelectItem value='acessórios'>Acessórios</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='localization'
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder='Localização' type='text' {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='stateOfConservation'
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Estado de conservação' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='todos'>Todos</SelectItem>
+                    <SelectItem value='novo'>Novo</SelectItem>
+                    <SelectItem value='seminovo'>Seminovo</SelectItem>
+                    <SelectItem value='muito-usado'>Muito usado</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+
+            <div className='flex gap-2'>
+              <Button type='submit' className='w-full'>
                 {form.formState.isSubmitting ? (
                   <>
                     <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -143,10 +148,14 @@ export default function BuscarForm() {
                   'Buscar'
                 )}
               </Button>
+
+              <Button type='button' variant='outline' onClick={limparBusca}>
+                Limpar
+              </Button>
             </div>
-          </form>
-        </Form>
-      </section>
-    </>
+          </div>
+        </form>
+      </Form>
+    </section>
   )
 }
