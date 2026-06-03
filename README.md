@@ -127,7 +127,7 @@ reuse-1/
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/reuse.git
+git clone https://github.com/abner-ferreira/reuse.git
 cd reuse-1
 
 # Instale as dependências
